@@ -1,0 +1,60 @@
+# Demo de SDBR Web con datos ficticios, todo en local:
+#
+#     docker compose up --build        →  http://localhost:8050
+#
+# 1. sqlserver: SQL Server 2022 (edición Developer, gratuita fuera de producción).
+# 2. instalar:  crea la base SDBR_DEMO con datos sintéticos y termina (demo/instalar.py).
+#               Cada "up" la rehace desde cero.
+# 3. web:       SDBR Web en modo demo, conectada con un usuario de permisos mínimos.
+#
+# Variables en demo/docker.env. La imagen de SQL Server solo existe para linux/amd64: en Mac con
+# Apple Silicon corre con emulación (Rosetta).
+
+name: sdbr-demo
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      # La misma que SDBR_DEMO_ADMIN_PASSWORD de demo/docker.env
+      MSSQL_SA_PASSWORD: "Demo-Admin-2026!"
+    ports:
+      - "127.0.0.1:14330:1433" # solo desde este equipo (SSMS, pruebas de integración)
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  instalar:
+    build: .
+    # --entorno: solo las variables de este servicio, no demo/docker.env de la imagen
+    command: ["python", "-m", "demo.instalar", "--entorno"]
+    env_file: demo/docker.env
+    environment:
+      SDBR_SQL_SERVIDOR: sqlserver
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+  web:
+    build: .
+    env_file: demo/docker.env
+    environment:
+      SDBR_SQL_SERVIDOR: sqlserver
+      # La aplicación no necesita la cuenta de administrador
+      SDBR_DEMO_ADMIN_USUARIO: ""
+      SDBR_DEMO_ADMIN_PASSWORD: ""
+    ports:
+      - "8050:8050"
+    depends_on:
+      instalar:
+        condition: service_completed_successfully

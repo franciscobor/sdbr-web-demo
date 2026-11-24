@@ -1,0 +1,37 @@
+# Despliegue de la demo en Azure App Service (plan F1, gratuito). Se lanza a mano desde la
+# pestaña Actions. Inicia sesión en Azure con OIDC: no hay contraseñas guardadas en GitHub, solo
+# los identificadores de la identidad federada (ver demo/DESPLIEGUE_AZURE.md).
+#
+# Configuración del repositorio:
+#   secrets: AZURE_CLIENT_ID, AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID
+#   vars:    AZURE_WEBAPP_NAME
+name: Desplegar en Azure
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: desplegar-azure
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    environment: azure-demo
+    steps:
+      - uses: actions/checkout@v4
+      - name: Paquete con lo que necesita la web
+        run: zip -r paquete.zip sdbr_web servidor.py requirements.txt -x "*/__pycache__/*"
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          package: paquete.zip

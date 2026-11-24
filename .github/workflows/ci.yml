@@ -1,0 +1,68 @@
+# Integración continua de la demo de SDBR Web.
+#   pruebas:     pyflakes + pruebas unitarias (sin base de datos)
+#   integracion: pruebas contra un SQL Server 2022 real con la base de demo recién instalada
+#   imagen:      construye la imagen de Docker
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - run: python -m pyflakes sdbr_web servidor.py tests tests_integracion demo
+      - run: python -m pytest
+
+  integracion:
+    runs-on: ubuntu-latest
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_PID: Developer
+          MSSQL_SA_PASSWORD: "Demo-Admin-2026!"
+        ports:
+          - 14330:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Demo-Admin-2026!' -C -Q 'SELECT 1' -b"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: ODBC Driver 18 for SQL Server
+        run: |
+          if ! odbcinst -q -d | grep -q "ODBC Driver 18 for SQL Server"; then
+            curl -fsSL -o /tmp/ms.deb "https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb"
+            sudo dpkg -i /tmp/ms.deb
+            sudo apt-get update
+            sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18
+          fi
+      - run: python -m pip install -r requirements.txt
+      - name: Pruebas de integración (instalan la demo desde cero)
+        env:
+          SDBR_PRUEBAS_INTEGRACION: "si"
+        run: python -m pytest tests_integracion -v
+
+  imagen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t sdbr-web-demo .

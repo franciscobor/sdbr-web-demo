@@ -1,0 +1,19 @@
+# Entorno virtual
+venv/
+.venv/
+
+# Bytecode y cachés
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Configuración local y secretos: nunca se versionan (plantilla en .env.ejemplo)
+.env
+demo/azure.env
+
+# Editores
+.vscode/
+.idea/
+
+# Registros de la aplicación
+logs/

@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}SDBR{% endblock %}</title>
+  <link rel="icon" href="/assets/favicon.ico">
+  <link rel="stylesheet" href="/assets/00_bootstrap_spacelab.min.css">
+  <link rel="stylesheet" href="/assets/estilos.css">
+</head>
+<body class="pagina-acceso">
+  {% if modo_demo %}<div class="franja-demo">{{ aviso_demo }}</div>{% endif %}
+  <main class="container">
+    <div class="row justify-content-center">
+      <div class="col-12 col-sm-9 col-md-6 col-lg-4">
+        <div class="text-center my-4">
+          <img src="{{ url_logo }}" alt="{{ empresa or 'SDBR' }}" class="logo-acceso">
+        </div>
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            {% block contenido %}{% endblock %}
+          </div>
+        </div>
+        {% block despues %}{% endblock %}
+        <p class="text-center text-muted small mt-3">SDBR {{ version }}{% if empresa %} · {{ empresa }}{% endif %}</p>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

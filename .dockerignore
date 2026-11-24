@@ -1,0 +1,18 @@
+# La imagen solo lleva lo que copia el Dockerfile. Esto evita además que el contexto de
+# construcción incluya secretos o la aplicación de escritorio.
+.env
+*.env.local
+demo/azure.env
+venv/
+.git/
+.vscode/
+.idea/
+logs/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+sdbr/
+sql/
+assets/
+build/
+dist/

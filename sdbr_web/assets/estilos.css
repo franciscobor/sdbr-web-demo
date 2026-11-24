@@ -1,0 +1,45 @@
+/* Estilos propios de SDBR Web. Bootstrap (tema Spacelab) va en 00_bootstrap_spacelab.min.css,
+   copiado al repositorio para no depender de Internet en la red de la planta. */
+
+:root {
+  --sdbr-fondo: #f5f6f8;
+  --sdbr-seleccion: #1e40af;
+}
+
+body {
+  background-color: var(--sdbr-fondo);
+}
+
+/* Pantallas de acceso (login y cambio de contraseña, servidas por Flask) */
+.pagina-acceso {
+  min-height: 100vh;
+}
+
+.logo-acceso {
+  max-width: 70%;
+  max-height: 140px;
+  height: auto;
+}
+
+/* Aviso fijo de la demo pública (SDBR_MODO_DEMO): datos ficticios y compartidos. */
+.franja-demo {
+  background-color: #fff3cd;
+  color: #664d03;
+  border-bottom: 1px solid #ffe69c;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 0.35rem 1rem;
+}
+
+/* Rejilla de pedidos: la fila marcada conserva el color de su zona, así que la selección se
+   señala con un contorno en vez de con un fondo. */
+.rejilla-sdbr .ag-row-selected {
+  outline: 3px solid var(--sdbr-seleccion);
+  outline-offset: -3px;
+}
+
+/* Las casillas de selección deben verse también sobre las filas negras. */
+.rejilla-sdbr .ag-checkbox-input-wrapper {
+  background-color: #ffffff;
+  border-radius: 3px;
+}
