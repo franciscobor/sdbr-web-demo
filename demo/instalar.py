@@ -42,6 +42,12 @@ from sdbr_web.config import (
 
 from demo.generar_datos import SEMILLA, generar
 
+# Sin el pool de conexiones de ODBC (SQLAlchemy ya tiene el suyo). Con unixODBC 2.3.12 (Ubuntu
+# 24.04, el runner de GitHub) una conexión reutilizada del pool conserva el autocommit apagado
+# aunque se pida autocommit=True: el CREATE LOGIN y los GRANT quedaban en una transacción que
+# nadie confirmaba. Tiene que fijarse antes de abrir la primera conexión del proceso.
+pyodbc.pooling = False
+
 CARPETA_DEMO = Path(__file__).resolve().parent
 CARPETA_SQL = CARPETA_DEMO / "sql"
 ENV_DOCKER = CARPETA_DEMO / "docker.env"

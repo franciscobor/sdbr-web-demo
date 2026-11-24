@@ -250,3 +250,8 @@ def test_instalar_rechaza_nombres_raros(tmp_path):
 
 def test_literal_escapa_comillas():
     assert instalar._literal("a'b") == "N'a''b'"
+
+
+def test_el_instalador_desactiva_el_pool_de_odbc():
+    # Con el pool de unixODBC 2.3.12, el DDL del instalador quedaba sin confirmar (ver instalar.py).
+    assert instalar.pyodbc.pooling is False
